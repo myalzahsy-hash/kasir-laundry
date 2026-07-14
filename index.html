@@ -3,191 +3,253 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Input Struk Laundry</title>
-    <!-- Script Wajib Telegram WebApp -->
+    <title>Laundry Checklist - Telegram POS</title>
+
+    <!-- Google Fonts & Font Awesome -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Telegram WebApp Script -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        brand: { 50: '#eff6ff', 100: '#dbeafe', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8' }
+                    }
+                }
+            }
+        }
+    </script>
+
     <style>
-        :root {
-            --primary: #6C5CE7;
-            --primary-hover: #5a4bcf;
-            --bg: #F4F4F9;
-            --text: #2D3436;
-        }
-        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background-color: var(--bg); color: var(--text); padding: 15px; margin: 0; }
-        
-        .card {
-            background: white; border-radius: 16px; padding: 20px;
-            box-shadow: 0 8px 16px rgba(0,0,0,0.05); margin-bottom: 20px;
-        }
-        .header { text-align: center; margin-bottom: 20px; }
-        .header h2 { color: var(--primary); margin: 0; font-size: 22px; }
-        
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; font-size: 14px; margin-bottom: 5px; font-weight: 600; }
-        .form-group input {
-            width: 100%; padding: 12px; border: 1px solid #E0E0E0; 
-            border-radius: 8px; font-size: 16px; outline: none; transition: 0.3s;
-        }
-        .form-group input:focus { border-color: var(--primary); }
-
-        .item-list { border-top: 2px dashed #EEE; padding-top: 15px; }
-        .item-row {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 10px 0; border-bottom: 1px solid #F5F5F5;
-        }
-        .item-name { font-size: 16px; font-weight: 500; }
-        
-        .counter { display: flex; align-items: center; gap: 15px; }
-        .btn-count {
-            background: var(--bg); color: var(--text); border: none;
-            width: 35px; height: 35px; border-radius: 8px; font-size: 20px;
-            cursor: pointer; display: flex; align-items: center; justify-content: center;
-            transition: 0.2s;
-        }
-        .btn-count:active { background: #DFDFDF; }
-        .qty-val { font-size: 18px; font-weight: bold; min-width: 20px; text-align: center; }
-
-        .total-box {
-            display: flex; justify-content: space-between; align-items: center;
-            background: rgba(108, 92, 231, 0.1); padding: 15px; border-radius: 12px;
-            margin-top: 15px; color: var(--primary); font-weight: bold; font-size: 18px;
-        }
-
-        .btn-submit {
-            background: var(--primary); color: white; width: 100%; padding: 16px;
-            border: none; border-radius: 12px; font-size: 16px; font-weight: bold;
-            margin-top: 20px; cursor: pointer; transition: 0.3s;
-            box-shadow: 0 4px 12px rgba(108, 92, 231, 0.3);
-        }
-        .btn-submit:active { background: var(--primary-hover); transform: translateY(2px); }
-        .error-msg { color: #d63031; font-size: 13px; margin-top: 5px; display: none; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
     </style>
 </head>
-<body>
+<body class="bg-slate-100 text-slate-800 antialiased min-h-screen pb-32 md:pb-10">
 
-    <div class="card">
-        <div class="header">
-            <h2>Laundry Kasir</h2>
+    <header class="bg-white shadow-sm sticky top-0 z-40 border-b border-slate-200">
+        <div class="max-w-3xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-brand-100 text-brand-600 rounded-xl flex items-center justify-center text-xl shadow-inner">
+                    <i class="fa-brands fa-telegram"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg leading-tight text-slate-800">Checklist POS</h1>
+                    <p class="text-[11px] text-slate-500 font-medium">Telegram Mini App</p>
+                </div>
+            </div>
         </div>
-        
-        <div class="form-group">
-            <label>Nama Pelanggan</label>
-            <input type="text" id="nama" placeholder="Masukkan nama...">
-            <div id="err-nama" class="error-msg">Nama tidak boleh kosong!</div>
-        </div>
-        
-        <div class="form-group">
-            <label>No. Nota</label>
-            <input type="text" id="nota" placeholder="Contoh: INV-001">
-            <div id="err-nota" class="error-msg">No. Nota tidak boleh kosong!</div>
-        </div>
+    </header>
 
-        <div class="item-list">
-            <label style="font-weight: 600; display:block; margin-bottom:10px;">Item Laundry</label>
+    <main class="max-w-3xl mx-auto mt-6 px-4 sm:px-6 space-y-6">
+        
+        <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 sm:p-6">
+            <h2 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-file-invoice"></i> Data Transaksi
+            </h2>
             
-            <div class="item-row" data-item="pakaian">
-                <span class="item-name">Pakaian</span>
-                <div class="counter">
-                    <button class="btn-count" onclick="updateQty('pakaian', -1)">-</button>
-                    <span class="qty-val" id="qty-pakaian">0</span>
-                    <button class="btn-count" onclick="updateQty('pakaian', 1)">+</button>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="space-y-1.5">
+                    <label class="text-xs font-semibold text-slate-600">Outlet</label>
+                    <div class="relative">
+                        <select id="outlet" class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-4 py-3 appearance-none focus:ring-2 focus:ring-brand-500 outline-none transition-all font-medium">
+                            <option>DayWash Laundry</option>
+                            <option>Zelia Laundry</option>
+                        </select>
+                        <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
+                    </div>
                 </div>
-            </div>
-            <div class="item-row" data-item="celana">
-                <span class="item-name">Celana</span>
-                <div class="counter">
-                    <button class="btn-count" onclick="updateQty('celana', -1)">-</button>
-                    <span class="qty-val" id="qty-celana">0</span>
-                    <button class="btn-count" onclick="updateQty('celana', 1)">+</button>
-                </div>
-            </div>
-            <div class="item-row" data-item="bh">
-                <span class="item-name">BH</span>
-                <div class="counter">
-                    <button class="btn-count" onclick="updateQty('bh', -1)">-</button>
-                    <span class="qty-val" id="qty-bh">0</span>
-                    <button class="btn-count" onclick="updateQty('bh', 1)">+</button>
-                </div>
-            </div>
-            <div class="item-row" data-item="kaos_kaki">
-                <span class="item-name">Kaos Kaki</span>
-                <div class="counter">
-                    <button class="btn-count" onclick="updateQty('kaos_kaki', -1)">-</button>
-                    <span class="qty-val" id="qty-kaos_kaki">0</span>
-                    <button class="btn-count" onclick="updateQty('kaos_kaki', 1)">+</button>
-                </div>
-            </div>
-            <div class="item-row" data-item="lainnya">
-                <span class="item-name">Lainnya</span>
-                <div class="counter">
-                    <button class="btn-count" onclick="updateQty('lainnya', -1)">-</button>
-                    <span class="qty-val" id="qty-lainnya">0</span>
-                    <button class="btn-count" onclick="updateQty('lainnya', 1)">+</button>
-                </div>
-            </div>
-        </div>
 
-        <div class="total-box">
-            <span>Total Item:</span>
-            <span id="total-qty">0 pcs</span>
-        </div>
+                <div class="space-y-1.5">
+                    <label class="text-xs font-semibold text-slate-600">Tanggal Nota</label>
+                    <input type="date" id="trxDate" class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-4 py-3 focus:ring-2 focus:ring-brand-500 outline-none transition-all font-medium">
+                </div>
 
-        <button class="btn-submit" onclick="kirimData()">KIRIM KE BOT</button>
-    </div>
+                <div class="space-y-1.5">
+                    <label class="text-xs font-semibold text-slate-600">Nama Pelanggan</label>
+                    <input type="text" id="customer" autocomplete="off" placeholder="Contoh: Budi Santoso" class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-4 py-3 focus:ring-2 focus:ring-brand-500 outline-none transition-all font-medium">
+                </div>
+
+                <div class="space-y-1.5">
+                    <label class="text-xs font-semibold text-slate-600">No. Nota (Opsional)</label>
+                    <input type="text" id="transaction" autocomplete="off" placeholder="Biarkan kosong jika auto" class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-4 py-3 focus:ring-2 focus:ring-brand-500 outline-none transition-all font-medium uppercase">
+                </div>
+            </div>
+        </section>
+
+        <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 sm:p-6">
+            <h2 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-tags"></i> Rincian Barang
+            </h2>
+
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col items-center gap-3">
+                    <span class="font-semibold text-slate-700">Pakaian</span>
+                    <div class="flex items-center justify-between w-full bg-white rounded-lg p-1 border border-slate-200 shadow-sm">
+                        <button onclick="minus('clothes')" class="w-10 h-10 rounded-md bg-rose-50 text-rose-600 font-bold flex items-center justify-center text-xl">−</button>
+                        <span id="clothesValue" class="text-2xl font-bold text-slate-800 w-12 text-center">0</span>
+                        <button onclick="plus('clothes')" class="w-10 h-10 rounded-md bg-emerald-50 text-emerald-600 font-bold flex items-center justify-center text-xl">+</button>
+                        <input type="hidden" id="clothes" value="0">
+                    </div>
+                </div>
+
+                <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col items-center gap-3">
+                    <span class="font-semibold text-slate-700">BH / Bra</span>
+                    <div class="flex items-center justify-between w-full bg-white rounded-lg p-1 border border-slate-200 shadow-sm">
+                        <button onclick="minus('bra')" class="w-10 h-10 rounded-md bg-rose-50 text-rose-600 font-bold flex items-center justify-center text-xl">−</button>
+                        <span id="braValue" class="text-2xl font-bold text-slate-800 w-12 text-center">0</span>
+                        <button onclick="plus('bra')" class="w-10 h-10 rounded-md bg-emerald-50 text-emerald-600 font-bold flex items-center justify-center text-xl">+</button>
+                        <input type="hidden" id="bra" value="0">
+                    </div>
+                </div>
+
+                <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col items-center gap-3">
+                    <span class="font-semibold text-slate-700">Celana Dalam</span>
+                    <div class="flex items-center justify-between w-full bg-white rounded-lg p-1 border border-slate-200 shadow-sm">
+                        <button onclick="minus('underwear')" class="w-10 h-10 rounded-md bg-rose-50 text-rose-600 font-bold flex items-center justify-center text-xl">−</button>
+                        <span id="underwearValue" class="text-2xl font-bold text-slate-800 w-12 text-center">0</span>
+                        <button onclick="plus('underwear')" class="w-10 h-10 rounded-md bg-emerald-50 text-emerald-600 font-bold flex items-center justify-center text-xl">+</button>
+                        <input type="hidden" id="underwear" value="0">
+                    </div>
+                </div>
+
+                <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col items-center gap-3">
+                    <span class="font-semibold text-slate-700">Kaos Kaki</span>
+                    <div class="flex items-center justify-between w-full bg-white rounded-lg p-1 border border-slate-200 shadow-sm">
+                        <button onclick="minus('socks')" class="w-10 h-10 rounded-md bg-rose-50 text-rose-600 font-bold flex items-center justify-center text-xl">−</button>
+                        <span id="socksValue" class="text-2xl font-bold text-slate-800 w-12 text-center">0</span>
+                        <button onclick="plus('socks')" class="w-10 h-10 rounded-md bg-emerald-50 text-emerald-600 font-bold flex items-center justify-center text-xl">+</button>
+                        <input type="hidden" id="socks" value="0">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-6 border-t border-slate-100 pt-6">
+                <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Lainnya (Opsional)</h3>
+                <div class="space-y-3">
+                    <div class="flex gap-2">
+                        <input type="text" id="otherName1" placeholder="Nama barang tambahan..." class="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm">
+                        <input type="number" id="otherQty1" min="0" placeholder="0" class="w-20 text-center bg-slate-50 border border-slate-200 rounded-xl px-2 py-3 text-lg font-bold">
+                    </div>
+                    <div class="flex gap-2">
+                        <input type="text" id="otherName2" placeholder="Nama barang tambahan..." class="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm">
+                        <input type="number" id="otherQty2" min="0" placeholder="0" class="w-20 text-center bg-slate-50 border border-slate-200 rounded-xl px-2 py-3 text-lg font-bold">
+                    </div>
+                    <div class="flex gap-2">
+                        <input type="text" id="otherName3" placeholder="Nama barang tambahan..." class="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm">
+                        <input type="number" id="otherQty3" min="0" placeholder="0" class="w-20 text-center bg-slate-50 border border-slate-200 rounded-xl px-2 py-3 text-lg font-bold">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 p-4 z-50">
+            <div class="max-w-3xl mx-auto flex gap-2">
+                
+                <button onclick="kirimBlanko()" class="flex-none bg-white text-brand-600 border-2 border-brand-500 font-bold px-4 py-3.5 rounded-xl transition-all active:scale-95 flex items-center justify-center gap-2 focus:outline-none">
+                    <i class="fa-solid fa-receipt"></i> <span class="hidden sm:inline">Blanko</span>
+                </button>
+
+                <button onclick="kirimData()" class="flex-1 bg-brand-600 text-white shadow-lg shadow-brand-500/30 font-bold px-4 py-3.5 rounded-xl transition-all active:scale-95 flex items-center justify-center gap-2 focus:outline-none text-lg">
+                    <i class="fa-solid fa-paper-plane"></i> KIRIM KE BOT
+                    <span class="ml-1 font-black bg-white/20 px-2 rounded-lg" id="totalMobile">0</span>
+                </button>
+            </div>
+        </section>
+
+    </main>
 
     <script>
         const tg = window.Telegram.WebApp;
-        tg.expand(); // Buat full screen
-        
-        let items = {
-            pakaian: 0,
-            celana: 0,
-            bh: 0,
-            kaos_kaki: 0,
-            lainnya: 0
-        };
+        tg.expand();
 
-        function updateQty(item, change) {
-            let newQty = items[item] + change;
-            if (newQty < 0) newQty = 0;
-            items[item] = newQty;
-            document.getElementById('qty-' + item).innerText = newQty;
-            hitungTotal();
-        }
+        document.getElementById("trxDate").value = new Date().toISOString().split("T")[0];
 
-        function hitungTotal() {
-            let total = 0;
-            for (let key in items) {
-                total += items[key];
-            }
-            document.getElementById('total-qty').innerText = total + " pcs";
+        function updateTotal() {
+            const total = 
+                Number(document.getElementById("clothes").value) +
+                Number(document.getElementById("bra").value) +
+                Number(document.getElementById("underwear").value) +
+                Number(document.getElementById("socks").value) +
+                (Number(document.getElementById("otherQty1").value) || 0) +
+                (Number(document.getElementById("otherQty2").value) || 0) +
+                (Number(document.getElementById("otherQty3").value) || 0);
+
+            document.getElementById("totalMobile").innerText = total;
             return total;
         }
 
-        function kirimData() {
-            let nama = document.getElementById('nama').value.trim();
-            let nota = document.getElementById('nota').value.trim();
-            let total = hitungTotal();
-            
-            // Validasi
-            document.getElementById('err-nama').style.display = nama === '' ? 'block' : 'none';
-            document.getElementById('err-nota').style.display = nota === '' ? 'block' : 'none';
-            
-            if (nama === '' || nota === '') return;
-            if (total === 0) {
-                tg.showAlert("Tambahkan minimal 1 item laundry!");
-                return;
+        ["otherQty1", "otherQty2", "otherQty3"].forEach(id => {
+            const el = document.getElementById(id);
+            el.addEventListener("input", updateTotal);
+            el.addEventListener("blur", function(){
+                if (Number(this.value) < 0 || this.value === "") this.value = "";
+                updateTotal();
+            });
+        });
+
+        function plus(id) {
+            const input = document.getElementById(id);
+            input.value = Number(input.value) + 1;
+            document.getElementById(id + "Value").innerText = input.value;
+            updateTotal();
+        }
+
+        function minus(id) {
+            const input = document.getElementById(id);
+            if (Number(input.value) > 0) {
+                input.value = Number(input.value) - 1;
+                document.getElementById(id + "Value").innerText = input.value;
+                updateTotal();
+            }
+        }
+
+        function extractData(isBlank = false) {
+            let others = [];
+            for (let i = 1; i <= 3; i++) {
+                let name = document.getElementById("otherName" + i).value;
+                let qty = document.getElementById("otherQty" + i).value;
+                if (name.trim() !== "" && Number(qty) > 0) {
+                    others.push({ name: name, qty: Number(qty) });
+                }
             }
 
-            let data = {
-                nama: nama,
-                nota: nota,
-                items: items,
-                total: total
+            return {
+                isBlank: isBlank,
+                outlet: document.getElementById("outlet").value,
+                trxDate: document.getElementById("trxDate").value,
+                customer: document.getElementById("customer").value,
+                transaction: document.getElementById("transaction").value,
+                clothes: Number(document.getElementById("clothes").value),
+                bra: Number(document.getElementById("bra").value),
+                underwear: Number(document.getElementById("underwear").value),
+                socks: Number(document.getElementById("socks").value),
+                others: others,
+                total: updateTotal()
             };
+        }
 
-            // Mengirim data balik ke bot dan menutup web app
+        function kirimData() {
+            const data = extractData(false);
+            if (!data.customer) { tg.showAlert("Nama pelanggan wajib diisi!"); return; }
+            if (data.total === 0) { tg.showAlert("Minimal ada 1 item yang diinput!"); return; }
+            tg.sendData(JSON.stringify(data));
+        }
+
+        function kirimBlanko() {
+            // Cukup butuh outlet untuk cetak blanko
+            const data = extractData(true);
             tg.sendData(JSON.stringify(data));
         }
     </script>
