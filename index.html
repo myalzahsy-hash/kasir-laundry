@@ -165,15 +165,28 @@
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        // 1. CEK URL UNTUK MODE EDIT (Jika dibuka dari tombol Edit di riwayat Telegram)
+        // perbaikan: deteksi data lewat URL query string (parameter ?edit=...) dan fallback ke hash (#edit=...)
         window.onload = function() {
             document.getElementById("trxDate").value = new Date().toISOString().split("T")[0];
             
-            const hash = window.location.hash.substring(1);
-            if(hash.startsWith('edit=')) {
+            const urlParams = new URLSearchParams(window.location.search);
+            let b64 = urlParams.get('edit');
+            
+            // Fallback jika b64 kosong (misal lewat rute hash lama)
+            if (!b64) {
+                const hash = window.location.hash.substring(1);
+                if (hash.startsWith('edit=')) {
+                    b64 = hash.split('edit=')[1];
+                }
+            }
+            
+            if (b64) {
                 try {
-                    const b64 = hash.split('edit=')[1];
-                    const data = JSON.parse(decodeURIComponent(escape(atob(b64))));
+                    // Penanganan kasus jika karakter + diubah jadi spasi oleh browser
+                    b64 = b64.replace(/\s/g, '+');
+                    const decodedStr = atob(b64);
+                    // Decode utf-8 safely
+                    const data = JSON.parse(decodeURIComponent(escape(decodedStr)));
                     
                     document.getElementById('titleBar').innerText = "Edit Checklist POS";
                     document.getElementById('editId').value = data.id;
@@ -184,21 +197,24 @@
                     
                     // Set item quantities
                     ['clothes', 'bra', 'underwear', 'socks'].forEach(item => {
-                        document.getElementById(item).value = data[item];
-                        document.getElementById(item + 'Value').innerText = data[item];
+                        const val = data[item] || 0;
+                        document.getElementById(item).value = val;
+                        document.getElementById(item + 'Value').innerText = val;
                     });
                     
                     // Set others
                     if (data.others && data.others.length > 0) {
                         data.others.forEach((item, index) => {
                             if (index < 3) {
-                                document.getElementById('otherName' + (index+1)).value = item.name;
-                                document.getElementById('otherQty' + (index+1)).value = item.qty;
+                                document.getElementById('otherName' + (index+1)).value = item.name || '';
+                                document.getElementById('otherQty' + (index+1)).value = item.qty || '';
                             }
                         });
                     }
                     updateTotal();
-                } catch(e) { console.error("Gagal parse data edit", e); }
+                } catch(e) { 
+                    console.error("Gagal parse data edit", e); 
+                }
             }
         };
 
